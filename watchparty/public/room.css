@@ -87,6 +87,24 @@ input[type=range]::-moz-range-thumb { width: 15px; height: 15px; border: 0; bord
 .seek::-webkit-slider-runnable-track { background: linear-gradient(90deg, #ff5f6d, #ffb347, #ffe66d, #7bed9f, #70a1ff, #b983ff) 0 0 / var(--p) 100% no-repeat, rgba(255, 255, 255, .22); }
 .seek::-moz-range-track { background: linear-gradient(90deg, #ff5f6d, #ffb347, #ffe66d, #7bed9f, #70a1ff, #b983ff) 0 0 / var(--p) 100% no-repeat, rgba(255, 255, 255, .22); }
 
+.captions { position: absolute; left: 8%; right: 8%; bottom: 6%; z-index: 6; text-align: center; pointer-events: none; transition: bottom .3s; --cap: clamp(13px, 1.45vw, 22px); }
+.screen:not(.idle) .captions { bottom: 92px; }
+.captions span { font-size: var(--cap); font-weight: 600; line-height: 1.45; color: #fff; white-space: pre-line;
+  background: rgba(0, 0, 0, .55); padding: .1em .45em; border-radius: 5px; -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
+.captions span:empty, .captions.off span { display: none; }
+.ccwrap { position: relative; display: inline-flex; }
+.cbtn.cc { font-size: 12px; letter-spacing: .03em; border: 1.5px solid rgba(255, 255, 255, .5); height: 24px; min-width: 32px; padding: 0 6px; margin: 7px 4px; border-radius: 5px; }
+.cbtn.cc.on { background: #fff; color: #1a0612; border-color: #fff; }
+.ccmenu { position: absolute; right: -60px; bottom: 44px; width: 250px; padding: 8px; border-radius: 14px; background: rgba(28, 8, 20, .96); border: 1px solid var(--line); box-shadow: 0 16px 40px rgba(0, 0, 0, .5); display: flex; flex-direction: column; gap: 6px; z-index: 20; }
+.ccitem { appearance: none; border: 1px solid var(--line); background: rgba(255, 255, 255, .06); color: #fff; font: 600 13.5px 'Quicksand', sans-serif; padding: 8px 10px; border-radius: 10px; cursor: pointer; text-align: left; }
+.ccitem:hover { background: rgba(255, 255, 255, .14); }
+.ccitem.sm { padding: 5px 9px; text-align: center; }
+.ccrow { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.ccrow span { flex: 1; }
+.ccrow b { color: #fff; min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-width: 900px) { .screen:not(.idle) .captions { bottom: 70px; } .captions { --cap: 13px; } }
+
 /* ---------- rail ---------- */
 .rail { min-height: 0; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; overflow-x: visible; padding: 14px 4px 2px; scrollbar-width: thin; }
 .cams { display: flex; flex-direction: column; gap: 18px; align-items: flex-end; }

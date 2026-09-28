@@ -66,6 +66,7 @@
       <div class="edge left" id="edgeL"></div>
       <div class="edge right" id="edgeR"></div>
 
+      <div class="captions" id="captions"><span id="capText"></span></div>
       <div class="countdown hidden" id="countdown"><span id="cdNum">3</span><small>press play! 🍿</small></div>
 
       <div class="controls" id="controls">
@@ -77,6 +78,15 @@
           <span class="time"><span id="tNow">0:00</span> / <span id="tDur">0:00</span></span>
           <span class="spacer"></span>
           <span class="vol"><button class="cbtn" id="muteBtn" title="Mute (m)">🔊</button><input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Volume"></span>
+          <span class="ccwrap">
+            <button class="cbtn cc" id="ccBtn" title="Captions (s)">CC</button>
+            <div class="ccmenu hidden" id="ccMenu">
+              <button class="ccitem" id="ccToggle">Captions: on</button>
+              <button class="ccitem" id="ccLoad">📄 Load subtitles (.srt / .vtt)</button>
+              <div class="ccrow"><span>timing</span><button class="ccitem sm" id="ccEarlier">−0.5s</button><b id="ccOff">0.0s</b><button class="ccitem sm" id="ccLater">+0.5s</button></div>
+              <div class="ccrow"><span>size</span><button class="ccitem sm" id="ccSmaller">A−</button><button class="ccitem sm" id="ccBigger">A+</button></div>
+            </div>
+          </span>
           <button class="cbtn" data-pick title="Pick movie file">🎬</button>
           <button class="cbtn" id="syncBtn" title="3-2-1 play together">⏱</button>
           <button class="cbtn" id="railBtn" title="Hide / show us (c)">💞</button>
@@ -124,6 +134,7 @@
     </aside>
   </main>
   <input type="file" id="file" accept="video/*,.mkv" hidden>
+  <input type="file" id="subFile" accept=".srt,.vtt,text/vtt" hidden>
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>

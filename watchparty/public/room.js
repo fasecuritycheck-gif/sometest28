@@ -3,7 +3,7 @@
 // side just watches. Perfect negotiation handles tracks added mid-call.
 const $ = id => document.getElementById(id);
 // One room, two people. Each picks who they are on the intro screen.
-const ROOM = 'lizzieandme-movie-night';
+const ROOM = 'lizzieandme-movie-night' + ((new URLSearchParams(location.search).get('test') || '').replace(/[^a-z0-9]/gi, '') ? '-test-' + new URLSearchParams(location.search).get('test').replace(/[^a-z0-9]/gi, '') : ''); // ?test=x = private test room
 const WHO = {
   pookie: { name: 'Pookie', icon: '💖' },
   munchkin: { name: 'Munchkin', icon: '🐻' },
@@ -85,6 +85,7 @@ function onData(raw) {
     case 'ctl': if (sharing) control(m.action, m.t); break;
     case 'mstate': if (!sharing) { partnerPaused = m.p; showProgress(m.t, m.d, m.p); } break;
     case 'countdown': runCountdown(false); break;
+    case 'cap': setCaption(m.text); break;
   }
 }
 
@@ -229,11 +230,19 @@ function route() {
   if (!cam && !remoteMeta.cam) cam = [...remoteStreams.values()].find(s => s !== movie && s.id !== remoteMeta.movie) || null;
   const pv = $('partnerVideo');
   if (pv.srcObject !== cam) { pv.srcObject = cam; if (cam) pv.play().catch(() => {}); }
-  $('partnerNone').classList.toggle('hidden', !!(cam && cam.getVideoTracks().some(t => !t.muted)));
+  camOverlay();
   const want = partnerSharing ? movie : null;
   if (remoteMovie.srcObject !== want) { remoteMovie.srcObject = want; if (want) remoteMovie.play().catch(() => {}); }
   refreshScreen();
 }
+
+// Show the "waiting" placeholder only while no picture is actually arriving.
+function camOverlay() {
+  const pv = $('partnerVideo');
+  $('partnerNone').classList.toggle('hidden', !!(pv.srcObject && pv.videoWidth > 0));
+}
+['loadeddata', 'resize', 'playing', 'emptied'].forEach(ev => $('partnerVideo').addEventListener(ev, camOverlay));
+setInterval(camOverlay, 2000);
 
 function partnerLeft() {
   remoteMeta = { cam: null, movie: null };
@@ -245,6 +254,7 @@ function partnerLeft() {
 }
 
 function refreshScreen() {
+  if (window.syncCC) syncCC();
   const showLocal = sharing, showRemote = !sharing && partnerSharing;
   localMovie.classList.toggle('show', showLocal);
   remoteMovie.classList.toggle('show', showRemote);
@@ -323,6 +333,7 @@ function control(action, t) {
     if (action === 'back') localMovie.currentTime = Math.max(0, localMovie.currentTime - 10);
     if (action === 'fwd') localMovie.currentTime = Math.min(localMovie.duration || 0, localMovie.currentTime + 10);
     if (action === 'seek' && isFinite(t)) localMovie.currentTime = t;
+    if (action === 'capoff' && isFinite(t)) { capOffset = t; syncCC(); }
     pushState();
   } else if (partnerSharing) {
     send({ type: 'ctl', action, t });
@@ -364,6 +375,86 @@ function syncVolumeUI() {
   $('vol').value = v.muted ? 0 : v.volume;
   $('muteBtn').textContent = v.muted || v.volume === 0 ? '🔇' : '🔊';
 }
+
+// ---------- captions ----------
+// The sharer loads an .srt/.vtt; their browser times the cues against the
+// movie and sends each line to the other side, so both see the same text.
+let cues = [], capOffset = 0, capOn = true, capShown = '', capScale = 1;
+
+function parseSubs(text) {
+  const t = s => {
+    const m = s.trim().match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/);
+    return m ? (+m[1] || 0) * 3600 + +m[2] * 60 + +m[3] + +('0.' + m[4]) : NaN;
+  };
+  return text.replace(/\r/g, '').split(/\n{2,}/).map(block => {
+    const lines = block.split('\n');
+    const i = lines.findIndex(l => l.includes('-->'));
+    if (i < 0) return null;
+    const [a, b] = lines[i].split('-->');
+    const body = lines.slice(i + 1).join('\n').replace(/<[^>]+>/g, '').replace(/\{\\[^}]*\}/g, '').trim();
+    return { start: t(a), end: t(b), text: body };
+  }).filter(c => c && c.text && isFinite(c.start) && isFinite(c.end)).sort((x, y) => x.start - y.start);
+}
+
+function setCaption(text) {
+  capShown = text || '';
+  $('capText').textContent = capShown;
+  syncCC();
+}
+
+function tickCaptions() {
+  if (!sharing || !cues.length) return;
+  const now = localMovie.currentTime - capOffset;
+  let lo = 0, hi = cues.length - 1, hit = '';
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1, c = cues[mid];
+    if (now < c.start) hi = mid - 1; else if (now > c.end) lo = mid + 1; else { hit = c.text; break; }
+  }
+  if (hit !== capShown) { setCaption(hit); send({ type: 'cap', text: hit }); }
+}
+setInterval(tickCaptions, 100);
+
+$('subFile').onchange = async () => {
+  const f = $('subFile').files[0];
+  if (!f) return;
+  const buf = await f.arrayBuffer();
+  let text = new TextDecoder('utf-8').decode(buf);
+  if (text.includes('�')) text = new TextDecoder('windows-1252').decode(buf); // older .srt files
+  cues = parseSubs(text);
+  $('subFile').value = '';
+  if (!cues.length) return sysNote('Couldn\'t read any subtitles from that file 😿');
+  capOn = true;
+  syncCC();
+  sysNote(`💬 subtitles loaded (${cues.length} lines)`);
+};
+
+function syncCC() {
+  $('captions').classList.toggle('off', !capOn);
+  $('ccBtn').classList.toggle('on', capOn);
+  $('ccToggle').textContent = 'Captions: ' + (capOn ? 'on' : 'off');
+  $('ccOff').textContent = (capOffset > 0 ? '+' : '') + capOffset.toFixed(1) + 's';
+  $('captions').style.setProperty('--cap', `calc(clamp(13px, 1.45vw, 22px) * ${capScale})`);
+}
+window.syncCC = syncCC;
+function toggleCaptions() { capOn = !capOn; syncCC(); }
+
+$('ccBtn').onclick = e => { e.stopPropagation(); $('ccMenu').classList.toggle('hidden'); wake(); };
+$('ccToggle').onclick = toggleCaptions;
+$('ccLoad').onclick = () => {
+  $('ccMenu').classList.add('hidden');
+  if (!sharing) return sysNote('Subtitles are loaded on the laptop that\'s sharing the movie 🎬');
+  $('subFile').click();
+};
+const nudge = d => {
+  capOffset = Math.round((capOffset + d) * 10) / 10;
+  syncCC();
+  if (!sharing) send({ type: 'ctl', action: 'capoff', t: capOffset });
+};
+$('ccEarlier').onclick = () => nudge(-0.5);
+$('ccLater').onclick = () => nudge(0.5);
+$('ccSmaller').onclick = () => { capScale = Math.max(0.6, capScale - 0.15); syncCC(); };
+$('ccBigger').onclick = () => { capScale = Math.min(2.2, capScale + 0.15); syncCC(); };
+document.addEventListener('click', e => { if (!e.target.closest('.ccwrap')) $('ccMenu').classList.add('hidden'); });
 
 // ---------- auto-hiding controls ----------
 let idleTimer;
@@ -509,7 +600,7 @@ $('syncBtn').onclick = $('syncStart').onclick = () => runCountdown(true);
 document.querySelectorAll('[data-gift]').forEach(b => b.onclick = () => sendGift(b.dataset.gift));
 
 screen_.addEventListener('click', e => {
-  if (e.target.closest('.controls, .choice, .countdown') || screen_.classList.contains('nomovie')) return;
+  if (e.target.closest('.controls, .choice, .countdown, .ccmenu') || screen_.classList.contains('nomovie')) return;
   clearTimeout(screen_.clickT);
   screen_.clickT = setTimeout(() => control('toggle'), 220); // single click = play/pause
 });
@@ -528,6 +619,7 @@ document.addEventListener('keydown', e => {
   else if (k === 'f') toggleFull();
   else if (k === 'm') $('muteBtn').click();
   else if (k === 'c') $('railBtn').click();
+  else if (k === 's') toggleCaptions();
   else return;
   wake();
 });
