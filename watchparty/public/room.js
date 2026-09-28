@@ -10,9 +10,25 @@ const WHO = {
 };
 let me = null, them = null;
 
+// Cloudflare TURN relay (phones / 5G / VPNs block direct links). Credentials expire ~48h after minting.
 const iceServers = [
-  { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
-  { urls: 'stun:stun.cloudflare.com:3478' },
+  {
+    "urls": [
+      "stun:stun.cloudflare.com:3478"
+    ]
+  },
+  {
+    "urls": [
+      "turn:turn.cloudflare.com:3478?transport=udp",
+      "turn:turn.cloudflare.com:3478?transport=tcp",
+      "turns:turn.cloudflare.com:5349?transport=tcp",
+      "turn:turn.cloudflare.com:443?transport=udp",
+      "turn:turn.cloudflare.com:80?transport=tcp",
+      "turns:turn.cloudflare.com:443?transport=tcp"
+    ],
+    "username": "g042e20c31f92cf133eb83028a6dc60168110b397671da795a0d1e7073c5cd0a",
+    "credential": "1e2fd5a1cc4138634bff295b86193106c0c88d5fdc53c47f96d6845d6b1321ac"
+  }
 ];
 
 let pc, polite = false, makingOffer = false, ignoreOffer = false;
