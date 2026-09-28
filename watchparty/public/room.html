@@ -2,141 +2,128 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Our Movie Night</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a0612">
+<title>Lizzie &amp; Me · Movie Night</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="love.css">
-<style>
-  body { min-height: 100vh; }
-  .wrap { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 12px; min-height: 100vh; }
-  header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  header h1 { margin: 0; font-size: 28px; color: var(--blush); text-shadow: 0 0 20px rgba(255, 77, 141, .6); }
-  .pill { font-size: 13.5px; padding: 6px 12px; border-radius: 999px; background: var(--glass); border: 1px solid var(--line); color: var(--muted); }
-  .pill.together { color: #fff; background: linear-gradient(135deg, rgba(255, 77, 141, .5), rgba(255, 122, 89, .4)); }
-  .spacer { flex: 1; }
-
-  .stage {
-    position: relative; flex: 1; min-height: 300px; border-radius: 26px; overflow: hidden;
-    border: 4px solid transparent;
-    background: linear-gradient(#12040d, #12040d) padding-box,
-                linear-gradient(90deg, #ff5f6d, #ffb347, #ffe66d, #7bed9f, #70a1ff, #b983ff, #ff6bcb, #ff5f6d) border-box;
-    background-size: 100% 100%, 300% 100%; animation: rainbow-move 8s linear infinite;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, .45), 0 0 0 6px rgba(255, 77, 141, .06);
-  }
-  .stage:fullscreen { border-radius: 0; border: 0; }
-  .movie { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: none; }
-  .movie.show { display: block; }
-  .empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px; }
-  .empty .h { font-size: 64px; animation: beat 1.4s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(255, 77, 141, .7)); }
-  .empty p { color: var(--muted); margin: 8px 0 18px; font-size: 16px; }
-
-  .cams { position: absolute; right: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 5; transition: opacity .3s; }
-  .cam { position: relative; border-radius: 18px; background: #2b0b1f; border: 2px solid rgba(255, 133, 179, .6); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
-  .cam video { border-radius: 16px; display: block; width: 100%; height: 100%; object-fit: cover; }
-  .cam .tag { position: absolute; left: 8px; bottom: 6px; font-size: 12px; font-weight: 700; text-shadow: 0 1px 4px #000; }
-  .cam .none { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; }
-  #partnerCam { width: 240px; aspect-ratio: 4/3; }
-  #myCam { width: 130px; aspect-ratio: 4/3; }
-  #myCam video { transform: scaleX(-1); }
-  .stage.nomovie .cams { right: 50%; bottom: 50%; transform: translate(50%, 50%); flex-direction: row; align-items: center; }
-  .stage.nomovie #partnerCam { width: min(46vw, 420px); }
-  .stage.nomovie #myCam { width: min(30vw, 260px); }
-  .stage:not(.nomovie) .empty { display: none; }
-  .stage.nomovie.hascams .empty { align-items: end; padding-bottom: 18px; }
-  .stage.nomovie.hascams .empty .h, .stage.nomovie.hascams .empty p { display: none; }
-
-  .note { position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 8; pointer-events: none;
-    padding: 10px 18px; border-radius: 20px; background: rgba(255, 77, 141, .85); font-weight: 700; font-size: 17px;
-    box-shadow: 0 10px 30px rgba(255, 77, 141, .45); animation: note 5s ease forwards; max-width: 80%; text-align: center; }
-  .note.mine { background: rgba(255, 255, 255, .2); }
-  @keyframes note { 0% { opacity: 0; transform: translate(-50%, 20px); } 10%, 80% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -60px); } }
-
-  .bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .progress { flex: 1; min-width: 160px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
-  .track { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .12); overflow: hidden; }
-  .track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff5f6d, #ffb347, #ffe66d, #7bed9f, #70a1ff, #b983ff); }
-  .whisper { display: flex; gap: 6px; }
-  .whisper input { width: 200px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(0, 0, 0, .25); color: var(--ink); font: 600 14px 'Quicksand', sans-serif; outline: none; }
-  .tip { font-size: 13px; color: var(--muted); opacity: .85; }
-
-  .gate { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(30, 5, 20, .75); backdrop-filter: blur(8px); padding: 16px; text-align: center; }
-  .gate .card { max-width: 440px; padding: 36px 26px; border-radius: 28px; background: rgba(255, 255, 255, .07); border: 1px solid var(--line); }
-  .gate h2 { font-size: 34px; margin: 6px 0; color: var(--blush); }
-  .intro { max-width: 560px !important; }
-  .love-line { font-size: clamp(34px, 8vw, 52px) !important; line-height: 1.25; min-height: 2.6em; margin: 18px 0 8px !important; }
-  .caret { color: var(--rose-2); animation: blink 1s steps(1) infinite; font-weight: 300; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .after { opacity: 0; transform: translateY(12px); transition: opacity .8s, transform .8s; pointer-events: none; }
-  .after.show { opacity: 1; transform: none; pointer-events: auto; }
-  .gate p { color: var(--muted); line-height: 1.5; }
-  .hidden { display: none !important; }
-
-  @media (max-width: 700px) {
-    #partnerCam { width: 150px; } #myCam { width: 90px; }
-    .whisper input { width: 100%; } .whisper { flex: 1 1 100%; }
-    .stage { min-height: 240px; }
-  }
-</style>
+<link rel="stylesheet" href="room.css">
 </head>
 <body>
 <div id="sky"></div>
 
+<!-- intro -->
 <div class="gate" id="gate">
-  <div class="card intro">
+  <div class="gate-card">
     <div class="arc"><span class="kitty l">😻</span><span class="kitty r">🐱</span></div>
     <h2 class="love-line"><span class="script rainbow-text" id="typed"></span><span class="caret">|</span></h2>
     <div class="after" id="after">
-      <p>tonight: <b>10 Things I Hate About You</b> 🍿<br>(spoiler: I don't hate a single thing about you)</p>
-      <button class="btn primary" id="enter">💖 Come in, pookie</button>
-      <p class="tip" style="margin-top:16px">we'll ask for your camera + mic so we can see each other 🐾<br>🎧 headphones on so the movie doesn't echo</p>
+      <p>tonight: <b>10 Things I Hate About You</b> 🍿<br><span class="soft">(spoiler: I don't hate a single thing about you)</span></p>
+      <p class="who-q">who's coming in?</p>
+      <div class="who">
+        <button class="who-btn" data-who="pookie"><span>💖</span><b>I'm Pookie</b><small>Lizzie</small></button>
+        <button class="who-btn" data-who="munchkin"><span>🐻</span><b>I'm Munchkin</b><small>Pierre</small></button>
+      </div>
+      <p class="tip">we'll ask for camera + mic so we can see each other 🐾 · headphones on 🎧</p>
     </div>
   </div>
 </div>
 
-<div class="wrap">
-  <header>
-    <h1><span class="script rainbow-text">Lizzie &amp; me</span> 🌈</h1>
-    <span class="pill" id="status">waiting for your love…</span>
+<div class="app" id="app">
+  <header class="top">
+    <h1><span class="script rainbow-text">Lizzie &amp; me</span> <span class="rb">🌈</span></h1>
+    <span class="pill" id="status"><i class="dot"></i><span>waiting for your love…</span></span>
     <span class="spacer"></span>
-    <button class="btn" id="copy">🔗 Copy our link</button>
+    <button class="btn ghost sm" id="copy">🔗 Copy our link</button>
   </header>
 
-  <div class="stage nomovie" id="stage">
-    <video class="movie" id="localMovie" playsinline controls></video>
-    <video class="movie" id="remoteMovie" playsinline autoplay></video>
-    <div class="empty">
-      <div>
-        <div class="h">🐱🎬🌈</div>
-        <p>pick our movie and it plays for both of us</p>
-        <button class="btn primary" data-pick>🍿 Pick our movie</button>
-      </div>
-    </div>
-    <div class="cams">
-      <div class="cam ears" id="partnerCam"><video id="partnerVideo" playsinline autoplay></video><div class="none" id="partnerNone">💗</div><span class="tag">my love 😻</span></div>
-      <div class="cam ears" id="myCam"><video id="myVideo" playsinline autoplay muted></video><span class="tag">me 🐱</span></div>
-    </div>
-  </div>
+  <main class="theater" id="theater">
+    <!-- the movie: nothing but auto-hiding controls ever sits on top of it -->
+    <section class="screen" id="screen">
+      <video class="movie" id="localMovie" playsinline preload="auto"></video>
+      <video class="movie" id="remoteMovie" playsinline autoplay></video>
 
-  <div class="bar">
-    <button class="btn" data-pick>🍿 Movie</button>
-    <button class="btn icon" id="back" title="Back 10s">⏪</button>
-    <button class="btn icon" id="play" title="Play / pause">⏯️</button>
-    <button class="btn icon" id="fwd" title="Forward 10s">⏩</button>
-    <div class="progress"><span id="tNow">0:00</span><div class="track"><i id="tBar"></i></div><span id="tDur">0:00</span></div>
-    <button class="btn icon" id="mic" title="Mic">🎤</button>
-    <button class="btn icon" id="camBtn" title="Camera">📷</button>
-    <button class="btn icon" id="camsToggle" title="Hide cams">🙈</button>
-    <button class="btn icon" id="full" title="Fullscreen">⛶</button>
-    <button class="btn primary heart-btn" id="love" title="Send love">💖</button>
-  </div>
-  <div class="bar">
-    <form class="whisper" id="whisper"><input name="msg" maxlength="140" placeholder="whisper something sweet…" autocomplete="off"><button class="btn">💌</button></form>
-    <span class="spacer"></span>
-    <span class="tip">double-tap the movie to send hearts · either of you can pause</span>
-  </div>
-  <input type="file" id="file" accept="video/*,.mkv" class="hidden">
+      <div class="empty" id="empty">
+        <div class="empty-inner">
+          <div class="empty-icon">🍿</div>
+          <h3 class="script">What are we watching?</h3>
+          <div class="choices">
+            <button class="choice" data-pick>
+              <b>🎬 Share a movie file</b>
+              <span>from this laptop, plays for both of us</span>
+            </button>
+            <button class="choice" id="syncStart">
+              <b>📺 Watching on Disney+ / Prime?</b>
+              <span>big 3-2-1 so we press play together</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="edge left" id="edgeL"></div>
+      <div class="edge right" id="edgeR"></div>
+
+      <div class="countdown hidden" id="countdown"><span id="cdNum">3</span><small>press play! 🍿</small></div>
+
+      <div class="controls" id="controls">
+        <input type="range" class="seek" id="seek" min="0" max="1000" value="0" step="1" aria-label="Seek">
+        <div class="crow">
+          <button class="cbtn" id="play" title="Play / pause (space)">▶</button>
+          <button class="cbtn" id="back" title="Back 10s (←)">↺10</button>
+          <button class="cbtn" id="fwd" title="Forward 10s (→)">10↻</button>
+          <span class="time"><span id="tNow">0:00</span> / <span id="tDur">0:00</span></span>
+          <span class="spacer"></span>
+          <span class="vol"><button class="cbtn" id="muteBtn" title="Mute (m)">🔊</button><input type="range" id="vol" min="0" max="1" step="0.01" value="1" aria-label="Volume"></span>
+          <button class="cbtn" data-pick title="Pick movie file">🎬</button>
+          <button class="cbtn" id="syncBtn" title="3-2-1 play together">⏱</button>
+          <button class="cbtn" id="railBtn" title="Hide / show us (c)">💞</button>
+          <button class="cbtn" id="full" title="Fullscreen (f)">⛶</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- us: cams, gifts, notes -->
+    <aside class="rail" id="rail">
+      <div class="cams">
+        <div class="cam ears" id="partnerCam">
+          <video id="partnerVideo" playsinline autoplay></video>
+          <div class="none" id="partnerNone"><span>😻</span><small id="partnerWait">waiting…</small></div>
+          <span class="tag" id="themTag">my love</span>
+          <div class="fx" id="fxPartner"></div>
+        </div>
+        <div class="cam ears" id="myCam">
+          <video id="myVideo" playsinline autoplay muted></video>
+          <div class="none hidden" id="myNone"><span>🐱</span><small>camera off</small></div>
+          <span class="tag" id="meTag">me</span>
+          <div class="fx" id="fxMe"></div>
+          <div class="mini">
+            <button class="mbtn" id="mic" title="Mic">🎤</button>
+            <button class="mbtn" id="camBtn" title="Camera">📷</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gifts" id="gifts">
+        <button class="gift" data-gift="popcorn" title="Share popcorn">🍿</button>
+        <button class="gift" data-gift="love" title="Send love">💖</button>
+        <button class="gift" data-gift="kiss" title="Blow a kiss">💋</button>
+        <button class="gift" data-gift="hug" title="Hug">🤗</button>
+        <button class="gift" data-gift="cat" title="Kitty">😻</button>
+        <button class="gift" data-gift="rainbow" title="Rainbow">🌈</button>
+      </div>
+      <div class="tally" id="tally">tap to send · double-tap the movie for hearts</div>
+
+      <div class="notes" id="notes"></div>
+      <form class="whisper" id="whisper">
+        <input name="msg" maxlength="140" placeholder="whisper something sweet…" autocomplete="off">
+        <button class="btn primary sm" aria-label="Send">💌</button>
+      </form>
+    </aside>
+  </main>
+  <input type="file" id="file" accept="video/*,.mkv" hidden>
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
