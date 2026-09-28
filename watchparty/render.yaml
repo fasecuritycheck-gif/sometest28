@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: lizzie-movie-night
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: ./public

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Our Movie Night</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💖</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="love.css">
+<style>
+  main { position: relative; z-index: 1; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; text-align: center; }
+  .card {
+    max-width: 520px; width: 100%; padding: 44px 28px 36px; border-radius: 32px;
+    background: rgba(255, 255, 255, .06); border: 1px solid var(--line); backdrop-filter: blur(16px);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .08);
+  }
+  .big-heart { font-size: 72px; display: inline-block; animation: beat 1.4s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(255, 77, 141, .8)); }
+  h1 { font-size: clamp(38px, 9vw, 58px); margin: 10px 0 4px; color: var(--blush); text-shadow: 0 0 30px rgba(255, 77, 141, .6); }
+  .sub { color: var(--muted); font-size: 17px; margin: 0 0 30px; line-height: 1.5; }
+  .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .join { display: flex; gap: 8px; margin-top: 18px; justify-content: center; }
+  .join input {
+    width: 160px; padding: 11px 16px; border-radius: 999px; border: 1px solid var(--line);
+    background: rgba(0, 0, 0, .2); color: var(--ink); font: 600 15px 'Quicksand', sans-serif; text-align: center; outline: none;
+  }
+  .join input:focus { border-color: var(--rose-2); }
+  .steps { margin: 32px 0 0; padding: 0; list-style: none; text-align: left; color: var(--muted); font-size: 14.5px; line-height: 1.7; }
+  .steps li::before { content: '🐾 '; }
+  .foot { margin-top: 22px; font-size: 13px; color: var(--muted); opacity: .8; }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<main>
+  <div class="card rainbow-border">
+    <div class="arc"><span class="kitty l">😻</span><span class="kitty r">🐱</span></div>
+    <h1 class="script rainbow-text">Lizzie &amp; me</h1>
+    <p class="sub">I love you, my little Lizzie pookie 💖<br>one movie, two cats, our faces 🍿</p>
+    <div class="row">
+      <a class="btn primary" href="#" id="make" style="text-decoration:none">💌 Make our room</a>
+    </div>
+    <form class="join" onsubmit="event.preventDefault(); const c=this.code.value.trim().toLowerCase().replace(/[^a-z0-9]/g,''); if(c) location.href='room.html?r='+c;">
+      <input name="code" placeholder="room code" maxlength="32" autocomplete="off">
+      <button class="btn" type="submit">Join ♥</button>
+    </form>
+    <ul class="steps">
+      <li>Make a room and send the link to your person</li>
+      <li>One of you picks the movie file from your computer</li>
+      <li>It streams straight to them with your cams on the side</li>
+      <li>Tap the heart (or double-tap the movie) to send love</li>
+    </ul>
+    <div class="foot">works best in Chrome or Edge on a laptop · wear headphones 🎧</div>
+  </div>
+</main>
+<script src="hearts.js"></script>
+<script>document.getElementById('make').onclick = e => { e.preventDefault(); const a = new Uint8Array(6); crypto.getRandomValues(a); location.href = 'room.html?r=' + [...a].map(x => 'abcdefghjkmnpqrstuvwxyz23456789'[x % 31]).join(''); };
+startSky(550); document.addEventListener('click', e => { if (!e.target.closest('a,button,input')) burstHearts(e.clientX, e.clientY, 12); });</script>
+</body>
+</html>
